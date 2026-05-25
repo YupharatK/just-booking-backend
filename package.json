@@ -1,0 +1,23 @@
+{
+  "name": "just-booking-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "test": "node --check index.js && node --check config/db.js && node --check config/cloudinary.js && node --check database/init.js && node --check controllers/authController.js && node --check controllers/userController.js && node --check controllers/ownerController.js && node --check controllers/adminController.js && node --check routes/authRoutes.js && node --check routes/userRoutes.js && node --check routes/ownerRoutes.js && node --check routes/adminRoutes.js && node --check middleware/authMiddleware.js && node --check middleware/uploadMiddleware.js && node --check utils/auth.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cloudinary": "^2.10.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "mysql2": "^3.22.3"
+  }
+}
