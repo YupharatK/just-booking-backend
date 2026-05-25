@@ -565,7 +565,41 @@ users เป็น array
 มี member และ owner ที่สมัครไว้
 ```
 
-### TC-022 Admin Activate Owner
+### TC-022 Admin Count Dormitories
+
+Request:
+
+```txt
+GET /api/admin/dormitories/count
+Authorization: Bearer {{adminToken}}
+```
+
+Expected:
+
+```txt
+200 OK
+total เป็นจำนวนหอพักทั้งหมดในระบบ
+byStatus.pending เป็นจำนวนหอพักที่รออนุมัติ
+byStatus.approved เป็นจำนวนหอพักที่อนุมัติแล้ว
+byStatus.rejected เป็นจำนวนหอพักที่ถูกปฏิเสธ
+byStatus.inactive เป็นจำนวนหอพักที่ปิดใช้งาน
+```
+
+Example Response:
+
+```json
+{
+  "total": 1,
+  "byStatus": {
+    "pending": 1,
+    "approved": 0,
+    "rejected": 0,
+    "inactive": 0
+  }
+}
+```
+
+### TC-023 Admin Activate Owner
 
 Request:
 
@@ -590,7 +624,7 @@ Expected:
 message = "อัปเดตสถานะผู้ใช้แล้ว"
 ```
 
-### TC-023 Admin List Pending Dormitories
+### TC-024 Admin List Pending Dormitories
 
 Request:
 
@@ -606,7 +640,7 @@ Expected:
 dormitories มี dormitoryId จาก TC-013
 ```
 
-### TC-024 Admin Approve Dormitory
+### TC-025 Admin Approve Dormitory
 
 Request:
 
@@ -622,7 +656,7 @@ Expected:
 message = "อนุมัติหอพักแล้ว"
 ```
 
-### TC-025 Admin Reject Dormitory
+### TC-026 Admin Reject Dormitory
 
 ใช้ทดสอบกับหอพักอีกตัวที่ยัง pending
 
@@ -651,7 +685,7 @@ message = "ปฏิเสธหอพักแล้ว"
 
 ## 6. Public / Member Dormitory Usage
 
-### TC-026 Search Approved Dormitories
+### TC-027 Search Approved Dormitories
 
 Request:
 
@@ -666,7 +700,7 @@ Expected:
 dormitories มี Just Test Dorm หลังแอดมินอนุมัติแล้ว
 ```
 
-### TC-027 Get Dormitory Detail
+### TC-028 Get Dormitory Detail
 
 Request:
 
@@ -683,7 +717,7 @@ rooms มี roomId
 rooms[0].images มีรูปจาก TC-019
 ```
 
-### TC-028 Add Favorite
+### TC-029 Add Favorite
 
 Request:
 
@@ -699,7 +733,7 @@ Expected:
 message = "บันทึกรายการโปรดแล้ว"
 ```
 
-### TC-029 List Favorites
+### TC-030 List Favorites
 
 Request:
 
@@ -715,7 +749,7 @@ Expected:
 favorites มี dormitoryId
 ```
 
-### TC-030 Remove Favorite
+### TC-031 Remove Favorite
 
 Request:
 
@@ -733,7 +767,7 @@ message = "ลบรายการโปรดแล้ว"
 
 ## 7. Booking And Payment
 
-### TC-031 Create Booking
+### TC-032 Create Booking
 
 Request:
 
@@ -768,7 +802,7 @@ bookingId = response.bookingId
 
 หมายเหตุ: เปลี่ยน `roomId` ให้เป็นค่าจริงจาก TC-017
 
-### TC-032 List My Bookings
+### TC-033 List My Bookings
 
 Request:
 
@@ -786,7 +820,7 @@ payment_status = "pending"
 qr_code_url มีค่า
 ```
 
-### TC-033 Submit Payment Slip
+### TC-034 Submit Payment Slip
 
 Request:
 
@@ -811,7 +845,7 @@ Expected:
 message = "ส่งหลักฐานการชำระเงินแล้ว"
 ```
 
-### TC-034 Admin List Bookings
+### TC-035 Admin List Bookings
 
 Request:
 
@@ -828,7 +862,7 @@ bookings มี bookingId
 payment_status = "submitted"
 ```
 
-### TC-035 Admin Verify Payment
+### TC-036 Admin Verify Payment
 
 Request:
 
@@ -854,7 +888,7 @@ message = "อัปเดตการชำระเงินแล้ว"
 booking status เปลี่ยนเป็น paid
 ```
 
-### TC-036 Owner List Bookings
+### TC-037 Owner List Bookings
 
 Request:
 
@@ -872,7 +906,7 @@ bookings มี bookingId
 
 ## 8. Review
 
-### TC-037 Create Review
+### TC-038 Create Review
 
 Request:
 
@@ -904,7 +938,7 @@ Save:
 reviewId = review id จากฐานข้อมูล หรือจากรายการ review ใน GET /api/dormitories/{{dormitoryId}}
 ```
 
-### TC-038 Owner Reply Review
+### TC-039 Owner Reply Review
 
 Request:
 
@@ -929,7 +963,7 @@ Expected:
 message = "ตอบรีวิวแล้ว"
 ```
 
-### TC-039 Admin Hide Review
+### TC-040 Admin Hide Review
 
 Request:
 
@@ -947,7 +981,7 @@ message = "ซ่อนรีวิวแล้ว"
 
 ## 9. Maintenance Request
 
-### TC-040 Create Maintenance Request
+### TC-041 Create Maintenance Request
 
 Request:
 
@@ -979,7 +1013,7 @@ message = "แจ้งซ่อมเรียบร้อย"
 
 ## 10. Authorization Negative Cases
 
-### TC-041 Call Protected API Without Token
+### TC-042 Call Protected API Without Token
 
 Request:
 
@@ -994,7 +1028,7 @@ Expected:
 message = "กรุณาเข้าสู่ระบบ"
 ```
 
-### TC-042 Member Calls Owner API
+### TC-043 Member Calls Owner API
 
 Request:
 
@@ -1010,7 +1044,7 @@ Expected:
 message = "ไม่มีสิทธิ์ใช้งานส่วนนี้"
 ```
 
-### TC-043 Owner Calls Admin API
+### TC-044 Owner Calls Admin API
 
 Request:
 
@@ -1026,7 +1060,7 @@ Expected:
 message = "ไม่มีสิทธิ์ใช้งานส่วนนี้"
 ```
 
-### TC-044 Not Found API
+### TC-045 Not Found API
 
 Request:
 
@@ -1045,6 +1079,6 @@ message = "ไม่พบ API ที่เรียกใช้งาน"
 
 1. TC-001 ถึง TC-010
 2. TC-013 ถึง TC-019
-3. TC-021 ถึง TC-024
-4. TC-026 ถึง TC-040
-5. TC-041 ถึง TC-044
+3. TC-021 ถึง TC-025
+4. TC-027 ถึง TC-041
+5. TC-042 ถึง TC-045

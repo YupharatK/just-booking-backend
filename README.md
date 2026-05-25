@@ -26,6 +26,7 @@ Backend พื้นฐานสำหรับแอปพลิเคชัน
 - `POST /api/owner/dormitories/:id/cover-image` เจ้าของอัปโหลดรูปหน้าปกหอพัก 1 รูป ใช้ `multipart/form-data` field `coverImage`
 - `POST /api/owner/dormitories/:dormitoryId/rooms` เจ้าของเพิ่มห้องพัก
 - `POST /api/owner/rooms/:roomId/images` เจ้าของอัปโหลดรูปห้องตัวอย่างสูงสุด 5 รูป ใช้ `multipart/form-data` field `roomImages`
+- `GET /api/admin/dormitories/count` แอดมินนับจำนวนหอพักทั้งหมดและแยกตามสถานะ
 - `PATCH /api/admin/dormitories/:id/approve` แอดมินอนุมัติหอพัก
 - `PATCH /api/admin/bookings/:bookingId/payment` แอดมินตรวจชำระเงิน
 

@@ -7,6 +7,7 @@ const router = express.Router();
 router.use(requireAuth, requireRole("admin"));
 router.get("/users", adminController.listUsers);
 router.patch("/users/:id/status", adminController.updateUserStatus);
+router.get("/dormitories/count", adminController.countDormitories);
 router.get("/dormitories/pending", adminController.listPendingDormitories);
 router.patch("/dormitories/:id/approve", adminController.approveDormitory);
 router.patch("/dormitories/:id/reject", adminController.rejectDormitory);

@@ -36,6 +36,33 @@ async function listPendingDormitories(req, res, next) {
   }
 }
 
+async function countDormitories(req, res, next) {
+  try {
+    const rows = await query(
+      `SELECT
+        COUNT(*) AS total,
+        SUM(status = 'pending') AS pending,
+        SUM(status = 'approved') AS approved,
+        SUM(status = 'rejected') AS rejected,
+        SUM(status = 'inactive') AS inactive
+       FROM dormitories`,
+    );
+
+    const counts = rows[0] || {};
+    res.json({
+      total: Number(counts.total || 0),
+      byStatus: {
+        pending: Number(counts.pending || 0),
+        approved: Number(counts.approved || 0),
+        rejected: Number(counts.rejected || 0),
+        inactive: Number(counts.inactive || 0),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function approveDormitory(req, res, next) {
   try {
     await query(
@@ -107,6 +134,7 @@ async function hideReview(req, res, next) {
 
 module.exports = {
   approveDormitory,
+  countDormitories,
   hideReview,
   listBookings,
   listPendingDormitories,
