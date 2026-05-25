@@ -39,6 +39,46 @@ Authorization: Bearer <token>
 
 ดูชุดทดสอบ API ครบทุกฟังก์ชันได้ที่ [API_TEST_CASES.md](./API_TEST_CASES.md)
 
+## Deploy To Render
+
+โปรเจกต์นี้มี `render.yaml` สำหรับสร้าง Render Web Service จาก GitHub repo แล้ว
+
+ค่าที่ต้องใส่ใน Render Environment:
+
+```txt
+DB_HOST
+DB_PORT
+DB_USER
+DB_PASSWORD
+DB_NAME
+DB_SSL_CA
+JWT_SECRET
+CLOUDINARY_CLOUD_NAME
+CLOUDINARY_API_KEY
+CLOUDINARY_API_SECRET
+PAYMENT_QR_BASE_URL
+ADMIN_EMAIL
+ADMIN_PASSWORD
+```
+
+Build Command:
+
+```txt
+npm ci
+```
+
+Start Command:
+
+```txt
+npm start
+```
+
+Health Check Path:
+
+```txt
+/health
+```
+
 ## การเก็บรูปภาพ
 
 - รูปหน้าปกหอพักเก็บใน Cloudinary และบันทึก URL ไว้ที่ `dormitories.cover_image_url`
