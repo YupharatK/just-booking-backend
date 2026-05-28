@@ -189,19 +189,9 @@ async function createBooking(req, res, next) {
     }
 
     const booking = await query(
-      `INSERT INTO bookings (user_id, room_id, move_in_date, note, total_amount)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO bookings (user_id, room_id, move_in_date, note, status, total_amount)
+       VALUES (?, ?, ?, ?, 'pending_owner_approval', ?)`,
       [req.user.id, roomId, moveInDate || null, note || null, rooms[0].price],
-    );
-
-    await query(
-      `INSERT INTO payments (booking_id, amount, qr_code_url)
-       VALUES (?, ?, ?)`,
-      [
-        booking.insertId,
-        rooms[0].price,
-        `${process.env.PAYMENT_QR_BASE_URL || "https://payment.example.com/qr"}/${booking.insertId}`,
-      ],
     );
 
     await query(
@@ -209,7 +199,11 @@ async function createBooking(req, res, next) {
       [roomId],
     );
 
-    res.status(201).json({ bookingId: booking.insertId, message: "สร้างรายการจองแล้ว" });
+    res.status(201).json({
+      bookingId: booking.insertId,
+      status: "pending_owner_approval",
+      message: "ส่งคำขอจองแล้ว กรุณารอเจ้าของหอพักอนุมัติ",
+    });
   } catch (error) {
     next(error);
   }
@@ -236,13 +230,19 @@ async function listMyBookings(req, res, next) {
 async function submitPaymentSlip(req, res, next) {
   try {
     const { slipImageUrl } = req.body;
-    await query(
+    const result = await query(
       `UPDATE payments p
        JOIN bookings b ON b.id = p.booking_id
        SET p.slip_image_url = ?, p.status = 'submitted', p.paid_at = NOW()
-       WHERE p.booking_id = ? AND b.user_id = ?`,
+       WHERE p.booking_id = ? AND b.user_id = ? AND b.status = 'pending_payment'`,
       [slipImageUrl, req.params.bookingId, req.user.id],
     );
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        message: "ยังไม่สามารถส่งหลักฐานชำระเงินได้ กรุณารอเจ้าของหอพักอนุมัติการจองก่อน",
+      });
+    }
 
     res.json({ message: "ส่งหลักฐานการชำระเงินแล้ว" });
   } catch (error) {

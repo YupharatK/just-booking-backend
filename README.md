@@ -19,13 +19,15 @@ Backend พื้นฐานสำหรับแอปพลิเคชัน
 - `GET /api/dormitories` ค้นหาหอพัก
 - `GET /api/dormitories/:id` ดูรายละเอียดหอพัก
 - `POST /api/favorites/:dormitoryId` เพิ่มรายการโปรด
-- `POST /api/bookings` จองห้องพัก
+- `POST /api/bookings` ส่งคำขอจองห้องพัก รอเจ้าของอนุมัติ
 - `POST /api/bookings/:bookingId/payment-slip` ส่งหลักฐานชำระเงิน
 - `POST /api/dormitories/:dormitoryId/reviews` รีวิวหอพัก
 - `POST /api/owner/dormitories` เจ้าของเพิ่มหอพัก
 - `POST /api/owner/dormitories/:id/cover-image` เจ้าของอัปโหลดรูปหน้าปกหอพัก 1 รูป ใช้ `multipart/form-data` field `coverImage`
 - `POST /api/owner/dormitories/:dormitoryId/rooms` เจ้าของเพิ่มห้องพัก
 - `POST /api/owner/rooms/:roomId/images` เจ้าของอัปโหลดรูปห้องตัวอย่างสูงสุด 5 รูป ใช้ `multipart/form-data` field `roomImages`
+- `PATCH /api/owner/bookings/:bookingId/approve` เจ้าของอนุมัติการจองและสร้างรายการชำระเงิน
+- `PATCH /api/owner/bookings/:bookingId/reject` เจ้าของปฏิเสธการจองและคืนจำนวนห้องว่าง
 - `GET /api/admin/dormitories/count` แอดมินนับจำนวนหอพักทั้งหมดและแยกตามสถานะ
 - `PATCH /api/admin/dormitories/:id/approve` แอดมินอนุมัติหอพัก
 - `PATCH /api/admin/bookings/:bookingId/payment` แอดมินตรวจชำระเงิน

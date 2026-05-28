@@ -321,6 +321,68 @@ async function listBookings(req, res, next) {
   }
 }
 
+async function approveBooking(req, res, next) {
+  try {
+    const bookings = await query(
+      `SELECT b.id, b.total_amount
+       FROM bookings b
+       JOIN rooms r ON r.id = b.room_id
+       JOIN dormitories d ON d.id = r.dormitory_id
+       WHERE b.id = ? AND d.owner_id = ? AND b.status = 'pending_owner_approval'`,
+      [req.params.bookingId, req.user.id],
+    );
+
+    if (!bookings[0]) {
+      return res.status(404).json({ message: "ไม่พบรายการจองที่รออนุมัติ" });
+    }
+
+    await query("UPDATE bookings SET status = 'pending_payment' WHERE id = ?", [
+      req.params.bookingId,
+    ]);
+
+    await query(
+      `INSERT INTO payments (booking_id, amount, qr_code_url)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE amount = VALUES(amount), qr_code_url = VALUES(qr_code_url)`,
+      [
+        req.params.bookingId,
+        bookings[0].total_amount,
+        `${process.env.PAYMENT_QR_BASE_URL || "https://payment.example.com/qr"}/${req.params.bookingId}`,
+      ],
+    );
+
+    res.json({ message: "อนุมัติการจองแล้ว ผู้เช่าสามารถชำระเงินได้" });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function rejectBooking(req, res, next) {
+  try {
+    const bookings = await query(
+      `SELECT b.id, b.room_id
+       FROM bookings b
+       JOIN rooms r ON r.id = b.room_id
+       JOIN dormitories d ON d.id = r.dormitory_id
+       WHERE b.id = ? AND d.owner_id = ? AND b.status = 'pending_owner_approval'`,
+      [req.params.bookingId, req.user.id],
+    );
+
+    if (!bookings[0]) {
+      return res.status(404).json({ message: "ไม่พบรายการจองที่รออนุมัติ" });
+    }
+
+    await query("UPDATE bookings SET status = 'rejected' WHERE id = ?", [req.params.bookingId]);
+    await query("UPDATE rooms SET available_count = available_count + 1 WHERE id = ?", [
+      bookings[0].room_id,
+    ]);
+
+    res.json({ message: "ปฏิเสธการจองแล้ว" });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function replyReview(req, res, next) {
   try {
     await query(
@@ -340,8 +402,10 @@ module.exports = {
   createDormitory,
   createRoom,
   deleteDormitory,
+  approveBooking,
   listBookings,
   listMyDormitories,
+  rejectBooking,
   replyReview,
   updateDormitory,
   updateRoom,

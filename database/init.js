@@ -81,7 +81,7 @@ async function initDatabase() {
       room_id INT NOT NULL,
       move_in_date DATE,
       note TEXT,
-      status ENUM('pending_payment','paid','confirmed','cancelled','rejected') NOT NULL DEFAULT 'pending_payment',
+      status ENUM('pending_owner_approval','pending_payment','paid','confirmed','cancelled','rejected') NOT NULL DEFAULT 'pending_owner_approval',
       total_amount DECIMAL(10, 2) NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -149,6 +149,11 @@ async function initDatabase() {
 
   await pool.query("ALTER TABLE dormitories ADD COLUMN cover_image_public_id VARCHAR(255) NULL").catch(ignoreDuplicateColumn);
   await pool.query("ALTER TABLE rooms ADD COLUMN image_public_id VARCHAR(255) NULL").catch(ignoreDuplicateColumn);
+  await pool.query(
+    `ALTER TABLE bookings
+     MODIFY status ENUM('pending_owner_approval','pending_payment','paid','confirmed','cancelled','rejected')
+     NOT NULL DEFAULT 'pending_owner_approval'`,
+  );
 
   if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
     await pool.query(

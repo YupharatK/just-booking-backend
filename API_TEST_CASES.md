@@ -792,6 +792,8 @@ Expected:
 ```txt
 201 Created
 bookingId มีค่า
+status = "pending_owner_approval"
+message = "ส่งคำขอจองแล้ว กรุณารอเจ้าของหอพักอนุมัติ"
 ```
 
 Save:
@@ -816,11 +818,84 @@ Expected:
 ```txt
 200 OK
 bookings มี bookingId
+status = "pending_owner_approval"
+payment_status = null
+qr_code_url = null
+```
+
+### TC-034 Owner List Bookings Before Approval
+
+Request:
+
+```txt
+GET /api/owner/bookings
+Authorization: Bearer {{ownerToken}}
+```
+
+Expected:
+
+```txt
+200 OK
+bookings มี bookingId
+status = "pending_owner_approval"
+```
+
+### TC-035 Owner Approve Booking
+
+Request:
+
+```txt
+PATCH /api/owner/bookings/{{bookingId}}/approve
+Authorization: Bearer {{ownerToken}}
+```
+
+Expected:
+
+```txt
+200 OK
+message = "อนุมัติการจองแล้ว ผู้เช่าสามารถชำระเงินได้"
+```
+
+### TC-036 List My Bookings After Owner Approval
+
+Request:
+
+```txt
+GET /api/bookings
+Authorization: Bearer {{memberToken}}
+```
+
+Expected:
+
+```txt
+200 OK
+bookings มี bookingId
+status = "pending_payment"
 payment_status = "pending"
 qr_code_url มีค่า
 ```
 
-### TC-034 Submit Payment Slip
+### TC-037 Owner Reject Booking
+
+ใช้ทดสอบกับ booking อีกตัวที่ยังเป็น `pending_owner_approval`
+
+Request:
+
+```txt
+PATCH /api/owner/bookings/{{anotherBookingId}}/reject
+Authorization: Bearer {{ownerToken}}
+```
+
+Expected:
+
+```txt
+200 OK
+message = "ปฏิเสธการจองแล้ว"
+booking status เปลี่ยนเป็น rejected
+จำนวนห้องว่างถูกคืนกลับ 1
+```
+
+### TC-038 Submit Payment Slip
 
 Request:
 
@@ -845,7 +920,7 @@ Expected:
 message = "ส่งหลักฐานการชำระเงินแล้ว"
 ```
 
-### TC-035 Admin List Bookings
+### TC-039 Admin List Bookings
 
 Request:
 
@@ -862,7 +937,7 @@ bookings มี bookingId
 payment_status = "submitted"
 ```
 
-### TC-036 Admin Verify Payment
+### TC-040 Admin Verify Payment
 
 Request:
 
@@ -888,7 +963,7 @@ message = "อัปเดตการชำระเงินแล้ว"
 booking status เปลี่ยนเป็น paid
 ```
 
-### TC-037 Owner List Bookings
+### TC-041 Owner List Bookings After Payment
 
 Request:
 
@@ -906,7 +981,7 @@ bookings มี bookingId
 
 ## 8. Review
 
-### TC-038 Create Review
+### TC-042 Create Review
 
 Request:
 
@@ -938,7 +1013,7 @@ Save:
 reviewId = review id จากฐานข้อมูล หรือจากรายการ review ใน GET /api/dormitories/{{dormitoryId}}
 ```
 
-### TC-039 Owner Reply Review
+### TC-043 Owner Reply Review
 
 Request:
 
@@ -963,7 +1038,7 @@ Expected:
 message = "ตอบรีวิวแล้ว"
 ```
 
-### TC-040 Admin Hide Review
+### TC-044 Admin Hide Review
 
 Request:
 
@@ -981,7 +1056,7 @@ message = "ซ่อนรีวิวแล้ว"
 
 ## 9. Maintenance Request
 
-### TC-041 Create Maintenance Request
+### TC-045 Create Maintenance Request
 
 Request:
 
@@ -1013,7 +1088,7 @@ message = "แจ้งซ่อมเรียบร้อย"
 
 ## 10. Authorization Negative Cases
 
-### TC-042 Call Protected API Without Token
+### TC-046 Call Protected API Without Token
 
 Request:
 
@@ -1028,7 +1103,7 @@ Expected:
 message = "กรุณาเข้าสู่ระบบ"
 ```
 
-### TC-043 Member Calls Owner API
+### TC-047 Member Calls Owner API
 
 Request:
 
@@ -1044,7 +1119,7 @@ Expected:
 message = "ไม่มีสิทธิ์ใช้งานส่วนนี้"
 ```
 
-### TC-044 Owner Calls Admin API
+### TC-048 Owner Calls Admin API
 
 Request:
 
@@ -1060,7 +1135,7 @@ Expected:
 message = "ไม่มีสิทธิ์ใช้งานส่วนนี้"
 ```
 
-### TC-045 Not Found API
+### TC-049 Not Found API
 
 Request:
 
@@ -1080,5 +1155,5 @@ message = "ไม่พบ API ที่เรียกใช้งาน"
 1. TC-001 ถึง TC-010
 2. TC-013 ถึง TC-019
 3. TC-021 ถึง TC-025
-4. TC-027 ถึง TC-041
-5. TC-042 ถึง TC-045
+4. TC-027 ถึง TC-045
+5. TC-046 ถึง TC-049
