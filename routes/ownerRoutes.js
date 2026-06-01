@@ -21,6 +21,7 @@ router.post("/rooms/:roomId/images", upload.array("roomImages", 5), ownerControl
 router.get("/bookings", ownerController.listBookings);
 router.patch("/bookings/:bookingId/approve", ownerController.approveBooking);
 router.patch("/bookings/:bookingId/reject", ownerController.rejectBooking);
+router.patch("/bookings/:bookingId/payment", ownerController.updateBookingPayment);
 router.post("/reviews/:reviewId/reply", ownerController.replyReview);
 
 module.exports = router;

@@ -383,6 +383,48 @@ async function rejectBooking(req, res, next) {
   }
 }
 
+async function updateBookingPayment(req, res, next) {
+  try {
+    const { status } = req.body;
+
+    if (!["verified", "rejected"].includes(status)) {
+      return res.status(400).json({ message: "สถานะการชำระเงินไม่ถูกต้อง" });
+    }
+
+    const bookings = await query(
+      `SELECT b.id
+       FROM bookings b
+       JOIN rooms r ON r.id = b.room_id
+       JOIN dormitories d ON d.id = r.dormitory_id
+       JOIN payments p ON p.booking_id = b.id
+       WHERE b.id = ?
+        AND d.owner_id = ?
+        AND b.status = 'pending_payment'
+        AND p.status = 'submitted'`,
+      [req.params.bookingId, req.user.id],
+    );
+
+    if (!bookings[0]) {
+      return res.status(404).json({ message: "ไม่พบรายการชำระเงินที่รอการยืนยัน" });
+    }
+
+    await query("UPDATE payments SET status = ? WHERE booking_id = ?", [
+      status,
+      req.params.bookingId,
+    ]);
+
+    if (status === "verified") {
+      await query("UPDATE bookings SET status = 'confirmed' WHERE id = ?", [
+        req.params.bookingId,
+      ]);
+    }
+
+    res.json({ message: "อัปเดตการชำระเงินแล้ว" });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function replyReview(req, res, next) {
   try {
     await query(
@@ -408,6 +450,7 @@ module.exports = {
   rejectBooking,
   replyReview,
   updateDormitory,
+  updateBookingPayment,
   updateRoom,
   uploadDormitoryCover,
   uploadRoomImages,
