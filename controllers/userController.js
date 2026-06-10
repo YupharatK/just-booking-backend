@@ -1,5 +1,6 @@
 const { query } = require("../config/db");
 const { hashPassword } = require("../utils/auth");
+const { uploadBuffer } = require("../config/cloudinary");
 
 function json(value) {
   return value === undefined ? null : JSON.stringify(value);
@@ -229,7 +230,13 @@ async function listMyBookings(req, res, next) {
 
 async function submitPaymentSlip(req, res, next) {
   try {
-    const { slipImageUrl } = req.body;
+    if (!req.file) {
+      return res.status(400).json({ message: "กรุณาแนบรูปภาพสลิปชำระเงิน" });
+    }
+
+    const uploaded = await uploadBuffer(req.file.buffer, "just-booking/payment-slips");
+    const slipImageUrl = uploaded.secure_url;
+
     const result = await query(
       `UPDATE payments p
        JOIN bookings b ON b.id = p.booking_id
