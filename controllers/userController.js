@@ -283,7 +283,7 @@ async function checkReviewEligibility(req, res, next) {
     const hasBooked = await query(`
       SELECT b.id FROM bookings b
       JOIN rooms r ON b.room_id = r.id
-      WHERE b.user_id = ? AND r.dormitory_id = ? AND b.status = 'completed'
+      WHERE b.user_id = ? AND r.dormitory_id = ? AND b.status = 'confirmed'
       LIMIT 1
     `, [req.user.id, req.params.dormitoryId]);
     
@@ -302,7 +302,7 @@ async function createReview(req, res, next) {
     const hasBooked = await query(`
       SELECT b.id FROM bookings b
       JOIN rooms r ON b.room_id = r.id
-      WHERE b.user_id = ? AND r.dormitory_id = ? AND b.status = 'completed'
+      WHERE b.user_id = ? AND r.dormitory_id = ? AND b.status = 'confirmed'
       LIMIT 1
     `, [req.user.id, req.params.dormitoryId]);
     

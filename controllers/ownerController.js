@@ -456,7 +456,7 @@ async function reviewTenant(req, res, next) {
       SELECT b.id FROM bookings b
       JOIN rooms r ON b.room_id = r.id
       JOIN dormitories d ON r.dormitory_id = d.id
-      WHERE b.user_id = ? AND d.owner_id = ? AND d.id = ? AND b.status = 'completed'
+      WHERE b.user_id = ? AND d.owner_id = ? AND d.id = ? AND b.status = 'confirmed'
       LIMIT 1
     `, [req.params.tenantId, req.user.id, dormitoryId]);
     
