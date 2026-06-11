@@ -385,7 +385,7 @@ async function rejectBooking(req, res, next) {
 
 async function updateBookingPayment(req, res, next) {
   try {
-    const { status } = req.body;
+    const { status, move_in_date } = req.body;
 
     if (!["verified", "rejected"].includes(status)) {
       return res.status(400).json({ message: "สถานะการชำระเงินไม่ถูกต้อง" });
@@ -414,9 +414,16 @@ async function updateBookingPayment(req, res, next) {
     ]);
 
     if (status === "verified") {
-      await query("UPDATE bookings SET status = 'confirmed' WHERE id = ?", [
-        req.params.bookingId,
-      ]);
+      if (move_in_date) {
+        await query("UPDATE bookings SET status = 'confirmed', move_in_date = ? WHERE id = ?", [
+          move_in_date,
+          req.params.bookingId,
+        ]);
+      } else {
+        await query("UPDATE bookings SET status = 'confirmed' WHERE id = ?", [
+          req.params.bookingId,
+        ]);
+      }
     }
 
     res.json({ message: "อัปเดตการชำระเงินแล้ว" });
