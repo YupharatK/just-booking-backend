@@ -400,7 +400,7 @@ async function updateBookingPayment(req, res, next) {
        WHERE b.id = ?
         AND d.owner_id = ?
         AND b.status = 'pending_payment'
-        AND p.status = 'submitted'`,
+        AND p.status != 'verified'`,
       [req.params.bookingId, req.user.id],
     );
 
