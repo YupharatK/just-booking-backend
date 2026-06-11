@@ -97,4 +97,4 @@ module.exports = {
   login,
   me,
   register,
-};
+}; #authController.js
