@@ -305,7 +305,9 @@ async function listBookings(req, res, next) {
   try {
     const rows = await query(
       `SELECT b.*, p.status AS payment_status, p.slip_image_url, u.first_name, u.last_name, u.phone, u.email, u.profile_image_url, u.nickname, u.address,
-        r.room_number, r.room_type, d.name AS dormitory_name
+        r.room_number, r.room_type, d.name AS dormitory_name,
+        (SELECT AVG(rating) FROM tenant_reviews WHERE tenant_id = u.id) AS average_rating,
+        (SELECT COUNT(*) FROM tenant_reviews WHERE tenant_id = u.id) AS review_count
        FROM bookings b
        JOIN users u ON u.id = b.user_id
        JOIN rooms r ON r.id = b.room_id
@@ -491,6 +493,31 @@ async function getTenantReviews(req, res, next) {
   }
 }
 
+async function getTenantsList(req, res, next) {
+  try {
+    const tenants = await query(`
+      SELECT 
+        u.id AS tenant_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image_url, u.nickname, u.address,
+        MAX(b.created_at) AS latest_booking_date,
+        d.id AS dormitory_id, d.name AS dormitory_name,
+        (SELECT COUNT(*) FROM tenant_reviews tr WHERE tr.owner_id = ? AND tr.tenant_id = u.id AND tr.dormitory_id = d.id) AS has_reviewed,
+        (SELECT AVG(rating) FROM tenant_reviews WHERE tenant_id = u.id) AS average_rating,
+        (SELECT COUNT(*) FROM tenant_reviews WHERE tenant_id = u.id) AS review_count
+      FROM bookings b
+      JOIN users u ON u.id = b.user_id
+      JOIN rooms r ON r.id = b.room_id
+      JOIN dormitories d ON r.dormitory_id = d.id
+      WHERE d.owner_id = ? AND b.status = 'confirmed'
+      GROUP BY u.id, d.id
+      ORDER BY latest_booking_date DESC
+    `, [req.user.id, req.user.id]);
+    
+    res.json({ tenants });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   approveBooking,
   createDormitory,
@@ -502,6 +529,7 @@ module.exports = {
   replyReview,
   reviewTenant,
   getTenantReviews,
+  getTenantsList,
   updateBookingPayment,
   updateDormitory,
   updateRoom,

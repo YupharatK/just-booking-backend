@@ -25,5 +25,6 @@ router.patch("/bookings/:bookingId/payment", ownerController.updateBookingPaymen
 router.post("/reviews/:reviewId/reply", ownerController.replyReview);
 router.post("/tenants/:tenantId/reviews", ownerController.reviewTenant);
 router.get("/tenants/:tenantId/reviews", ownerController.getTenantReviews);
+router.get("/tenants", ownerController.getTenantsList);
 
 module.exports = router;
