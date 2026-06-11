@@ -15,6 +15,7 @@ router.delete("/favorites/:dormitoryId", memberOnly, userController.removeFavori
 router.post("/bookings", memberOnly, userController.createBooking);
 router.get("/bookings", memberOnly, userController.listMyBookings);
 router.post("/bookings/:bookingId/payment-slip", memberOnly, upload.single("slipImage"), userController.submitPaymentSlip);
+router.get("/dormitories/:dormitoryId/reviews/eligibility", memberOnly, userController.checkReviewEligibility);
 router.post("/dormitories/:dormitoryId/reviews", memberOnly, userController.createReview);
 router.post("/maintenance-requests", memberOnly, userController.createMaintenanceRequest);
 

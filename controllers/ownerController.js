@@ -447,17 +447,63 @@ async function replyReview(req, res, next) {
   }
 }
 
+async function reviewTenant(req, res, next) {
+  try {
+    const { rating, comment, dormitoryId } = req.body;
+    
+    // Check if the tenant actually completed a booking at a dorm owned by this owner
+    const hasCompletedBooking = await query(`
+      SELECT b.id FROM bookings b
+      JOIN rooms r ON b.room_id = r.id
+      JOIN dormitories d ON r.dormitory_id = d.id
+      WHERE b.user_id = ? AND d.owner_id = ? AND d.id = ? AND b.status = 'completed'
+      LIMIT 1
+    `, [req.params.tenantId, req.user.id, dormitoryId]);
+    
+    if (hasCompletedBooking.length === 0) {
+      return res.status(403).json({ message: "คุณสามารถรีวิวได้เฉพาะผู้เช่าที่เข้าพักหอพักของคุณเท่านั้น (สถานะการจองต้องเป็น completed)" });
+    }
+
+    await query(
+      "INSERT INTO tenant_reviews (owner_id, tenant_id, dormitory_id, rating, comment) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE rating = VALUES(rating), comment = VALUES(comment)",
+      [req.user.id, req.params.tenantId, dormitoryId, Number(rating), comment || null],
+    );
+    res.status(201).json({ message: "รีวิวผู้เช่าสำเร็จ" });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getTenantReviews(req, res, next) {
+  try {
+    const reviews = await query(`
+      SELECT tr.*, u.first_name AS owner_first_name, u.last_name AS owner_last_name, d.name AS dormitory_name
+      FROM tenant_reviews tr
+      JOIN users u ON tr.owner_id = u.id
+      JOIN dormitories d ON tr.dormitory_id = d.id
+      WHERE tr.tenant_id = ?
+      ORDER BY tr.created_at DESC
+    `, [req.params.tenantId]);
+    
+    res.json({ reviews });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
+  approveBooking,
   createDormitory,
   createRoom,
   deleteDormitory,
-  approveBooking,
   listBookings,
   listMyDormitories,
   rejectBooking,
   replyReview,
-  updateDormitory,
+  reviewTenant,
+  getTenantReviews,
   updateBookingPayment,
+  updateDormitory,
   updateRoom,
   uploadDormitoryCover,
   uploadRoomImages,

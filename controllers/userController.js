@@ -277,10 +277,39 @@ async function submitPaymentSlip(req, res, next) {
   }
 }
 
+// ฟังก์ชันตรวจสอบสิทธิ์การรีวิว (ผู้ใช้ต้องเคยมีประวัติการจองสถานะ completed เท่านั้น)
+async function checkReviewEligibility(req, res, next) {
+  try {
+    const hasBooked = await query(`
+      SELECT b.id FROM bookings b
+      JOIN rooms r ON b.room_id = r.id
+      WHERE b.user_id = ? AND r.dormitory_id = ? AND b.status = 'completed'
+      LIMIT 1
+    `, [req.user.id, req.params.dormitoryId]);
+    
+    res.json({ eligible: hasBooked.length > 0 });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // ฟังก์ชันสำหรับบันทึกการให้คะแนน (Rating) และความคิดเห็น (Review) ของผู้ใช้งานต่อหอพัก
 async function createReview(req, res, next) {
   try {
     const { rating, comment } = req.body;
+    
+    // Check eligibility
+    const hasBooked = await query(`
+      SELECT b.id FROM bookings b
+      JOIN rooms r ON b.room_id = r.id
+      WHERE b.user_id = ? AND r.dormitory_id = ? AND b.status = 'completed'
+      LIMIT 1
+    `, [req.user.id, req.params.dormitoryId]);
+    
+    if (hasBooked.length === 0) {
+      return res.status(403).json({ message: "คุณต้องเป็นผู้เช่าที่เข้าพักหอพักนี้แล้วเท่านั้น (สถานะการจองเสร็จสิ้น) จึงจะสามารถรีวิวได้" });
+    }
+
     await query(
       "INSERT INTO reviews (user_id, dormitory_id, rating, comment) VALUES (?, ?, ?, ?)",
       [req.user.id, req.params.dormitoryId, Number(rating), comment || null],
@@ -307,6 +336,7 @@ async function createMaintenanceRequest(req, res, next) {
 
 module.exports = {
   addFavorite,
+  checkReviewEligibility,
   createBooking,
   createMaintenanceRequest,
   createReview,

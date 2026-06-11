@@ -23,5 +23,7 @@ router.patch("/bookings/:bookingId/approve", ownerController.approveBooking);
 router.patch("/bookings/:bookingId/reject", ownerController.rejectBooking);
 router.patch("/bookings/:bookingId/payment", ownerController.updateBookingPayment);
 router.post("/reviews/:reviewId/reply", ownerController.replyReview);
+router.post("/tenants/:tenantId/reviews", ownerController.reviewTenant);
+router.get("/tenants/:tenantId/reviews", ownerController.getTenantReviews);
 
 module.exports = router;
