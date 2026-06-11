@@ -271,29 +271,26 @@ async function updateRoom(req, res, next) {
   try {
     const { roomNumber, roomType, price, availableCount, status, availableFrom, facilities } = req.body;
 
-    await query(
-      `UPDATE rooms r
-       JOIN dormitories d ON d.id = r.dormitory_id
-       SET r.room_number = COALESCE(?, r.room_number),
-        r.room_type = COALESCE(?, r.room_type),
-        r.price = COALESCE(?, r.price),
-        r.available_count = COALESCE(?, r.available_count),
-        r.status = COALESCE(?, r.status),
-        r.available_from = COALESCE(?, r.available_from),
-        r.facilities = COALESCE(?, r.facilities)
-       WHERE r.id = ? AND d.owner_id = ?`,
-      [
-        roomNumber || null,
-        roomType || null,
-        price || null,
-        availableCount ?? null,
-        status || null,
-        availableFrom || null,
-        facilities === undefined ? null : json(facilities),
-        req.params.roomId,
-        req.user.id,
-      ],
-    );
+    const updates = [];
+    const values = [];
+
+    if (roomNumber !== undefined) { updates.push('r.room_number = ?'); values.push(roomNumber || null); }
+    if (roomType !== undefined) { updates.push('r.room_type = ?'); values.push(roomType || null); }
+    if (price !== undefined) { updates.push('r.price = ?'); values.push(price || null); }
+    if (availableCount !== undefined) { updates.push('r.available_count = ?'); values.push(availableCount); }
+    if (status !== undefined) { updates.push('r.status = ?'); values.push(status || null); }
+    if (availableFrom !== undefined) { updates.push('r.available_from = ?'); values.push(availableFrom || null); }
+    if (facilities !== undefined) { updates.push('r.facilities = ?'); values.push(facilities === null ? null : json(facilities)); }
+
+    if (updates.length > 0) {
+      await query(
+        `UPDATE rooms r
+         JOIN dormitories d ON d.id = r.dormitory_id
+         SET ${updates.join(', ')}
+         WHERE r.id = ? AND d.owner_id = ?`,
+        [...values, req.params.roomId, req.user.id],
+      );
+    }
 
     res.json({ message: "อัปเดตห้องพักแล้ว" });
   } catch (error) {
