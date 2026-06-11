@@ -304,7 +304,7 @@ async function updateRoom(req, res, next) {
 async function listBookings(req, res, next) {
   try {
     const rows = await query(
-      `SELECT b.*, p.status AS payment_status, p.slip_image_url, u.first_name, u.last_name,
+      `SELECT b.*, p.status AS payment_status, p.slip_image_url, u.first_name, u.last_name, u.phone, u.email, u.profile_image_url, u.nickname,
         r.room_number, r.room_type, d.name AS dormitory_name
        FROM bookings b
        JOIN users u ON u.id = b.user_id

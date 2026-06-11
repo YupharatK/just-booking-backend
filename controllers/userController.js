@@ -6,6 +6,7 @@ function json(value) {
   return value === undefined ? null : JSON.stringify(value);
 }
 
+// ฟังก์ชันสำหรับอัปเดตข้อมูลโปรไฟล์ของผู้ใช้งาน (เช่น ชื่อ, เบอร์โทร, ที่อยู่, รหัสผ่าน) ลงในฐานข้อมูล
 async function updateProfile(req, res, next) {
   try {
     const {
@@ -52,6 +53,7 @@ async function updateProfile(req, res, next) {
   }
 }
 
+// ฟังก์ชันสำหรับดึงรายการหอพักทั้งหมด โดยรองรับการค้นหาและกรองข้อมูล (ราคา, ระยะทาง, ประเภทห้อง)
 async function listDormitories(req, res, next) {
   try {
     const { search, minPrice, maxPrice, maxDistance, roomType } = req.query;
@@ -97,6 +99,7 @@ async function listDormitories(req, res, next) {
   }
 }
 
+// ฟังก์ชันสำหรับดึงรายละเอียดแบบเจาะลึกของหอพัก 1 แห่ง รวมถึงข้อมูลห้องพัก รูปภาพ และรีวิวทั้งหมด
 async function getDormitory(req, res, next) {
   try {
     const dormitories = await query(
@@ -140,6 +143,7 @@ async function getDormitory(req, res, next) {
   }
 }
 
+// ฟังก์ชันสำหรับเพิ่มหอพักลงในรายการโปรด (Favorites) ของผู้ใช้งาน
 async function addFavorite(req, res, next) {
   try {
     await query(
@@ -152,6 +156,7 @@ async function addFavorite(req, res, next) {
   }
 }
 
+// ฟังก์ชันสำหรับลบหอพักออกจากรายการโปรดของผู้ใช้งาน
 async function removeFavorite(req, res, next) {
   try {
     await query("DELETE FROM favorites WHERE user_id = ? AND dormitory_id = ?", [
@@ -164,6 +169,7 @@ async function removeFavorite(req, res, next) {
   }
 }
 
+// ฟังก์ชันสำหรับดึงข้อมูลรายการหอพักทั้งหมดที่ผู้ใช้งานกดชื่นชอบไว้
 async function listFavorites(req, res, next) {
   try {
     const rows = await query(
@@ -180,6 +186,7 @@ async function listFavorites(req, res, next) {
   }
 }
 
+// ฟังก์ชันสำหรับสร้างคำขอจองห้องพัก โดยจะเช็คว่าห้องว่างหรือไม่ และลดจำนวนห้องว่างลง 1 ห้อง
 async function createBooking(req, res, next) {
   try {
     const { roomId, moveInDate, note } = req.body;
@@ -191,8 +198,19 @@ async function createBooking(req, res, next) {
 
     const booking = await query(
       `INSERT INTO bookings (user_id, room_id, move_in_date, note, status, total_amount)
-       VALUES (?, ?, ?, ?, 'pending_owner_approval', ?)`,
+       VALUES (?, ?, ?, ?, 'pending_payment', ?)`,
       [req.user.id, roomId, moveInDate || null, note || null, rooms[0].price],
+    );
+
+    // Insert payment record immediately to bypass owner initial approval
+    await query(
+      `INSERT INTO payments (booking_id, amount, qr_code_url)
+       VALUES (?, ?, ?)`,
+      [
+        booking.insertId,
+        rooms[0].price,
+        `${process.env.PAYMENT_QR_BASE_URL || "https://payment.example.com/qr"}/${booking.insertId}`,
+      ],
     );
 
     await query(
@@ -202,14 +220,15 @@ async function createBooking(req, res, next) {
 
     res.status(201).json({
       bookingId: booking.insertId,
-      status: "pending_owner_approval",
-      message: "ส่งคำขอจองแล้ว กรุณารอเจ้าของหอพักอนุมัติ",
+      status: "pending_payment",
+      message: "จองสำเร็จ กรุณาชำระเงินและแนบสลิป",
     });
   } catch (error) {
     next(error);
   }
 }
 
+// ฟังก์ชันสำหรับดึงประวัติการจองทั้งหมดของผู้ใช้งาน พร้อมสถานะการชำระเงินและรายละเอียดหอพัก
 async function listMyBookings(req, res, next) {
   try {
     const rows = await query(
@@ -228,6 +247,7 @@ async function listMyBookings(req, res, next) {
   }
 }
 
+// ฟังก์ชันสำหรับอัปโหลดสลิปโอนเงินขึ้น Cloudinary และอัปเดตสถานะการชำระเงินในฐานข้อมูล
 async function submitPaymentSlip(req, res, next) {
   try {
     if (!req.file) {
@@ -257,6 +277,7 @@ async function submitPaymentSlip(req, res, next) {
   }
 }
 
+// ฟังก์ชันสำหรับบันทึกการให้คะแนน (Rating) และความคิดเห็น (Review) ของผู้ใช้งานต่อหอพัก
 async function createReview(req, res, next) {
   try {
     const { rating, comment } = req.body;
@@ -270,6 +291,7 @@ async function createReview(req, res, next) {
   }
 }
 
+// ฟังก์ชันสำหรับสร้างคำขอแจ้งซ่อมสิ่งของหรือปัญหาภายในห้องพัก
 async function createMaintenanceRequest(req, res, next) {
   try {
     const { roomId, title, description } = req.body;
