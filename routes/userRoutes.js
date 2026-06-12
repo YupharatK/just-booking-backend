@@ -1,7 +1,7 @@
 const express = require("express");
 const userController = require("../controllers/userController");
 const { requireAuth, requireRole } = require("../middleware/authMiddleware");
-const upload = require("../middleware/uploadMiddleware");
+const { upload } = require("../middleware/uploadMiddleware");
 
 const router = express.Router();
 const memberOnly = [requireAuth, requireRole("member", "admin")];

@@ -36,6 +36,30 @@ async function listPendingDormitories(req, res, next) {
   }
 }
 
+async function getSignedDocuments(req, res, next) {
+  try {
+    const rows = await query(
+      `SELECT owner_id_card_public_id, dorm_document_public_id
+       FROM dormitories
+       WHERE id = ?`,
+      [req.params.id]
+    );
+
+    if (!rows[0]) {
+      return res.status(404).json({ message: "ไม่พบข้อมูลหอพัก" });
+    }
+
+    const { getSignedUrl } = require("../config/cloudinary");
+    
+    res.json({
+      ownerIdCardUrl: getSignedUrl(rows[0].owner_id_card_public_id, 'image'),
+      dormDocumentUrl: getSignedUrl(rows[0].dorm_document_public_id, 'auto'),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function countDormitories(req, res, next) {
   try {
     const rows = await query(
@@ -138,6 +162,7 @@ module.exports = {
   hideReview,
   listBookings,
   listPendingDormitories,
+  getSignedDocuments,
   listUsers,
   rejectDormitory,
   updateUserStatus,

@@ -1,7 +1,7 @@
 const express = require("express");
 const ownerController = require("../controllers/ownerController");
 const { requireAuth, requireRole } = require("../middleware/authMiddleware");
-const upload = require("../middleware/uploadMiddleware");
+const { upload, uploadDocs } = require("../middleware/uploadMiddleware");
 
 const router = express.Router();
 
@@ -14,6 +14,16 @@ router.post(
   upload.single("coverImage"),
   ownerController.uploadDormitoryCover,
 );
+
+router.post(
+  "/dormitories/:id/verification-documents",
+  uploadDocs.fields([
+    { name: 'ownerIdCard', maxCount: 1 },
+    { name: 'dormDocument', maxCount: 1 }
+  ]),
+  ownerController.uploadVerificationDocuments,
+);
+
 router.delete("/dormitories/:id", ownerController.deleteDormitory);
 router.post("/dormitories/:dormitoryId/rooms", ownerController.createRoom);
 router.patch("/rooms/:roomId", ownerController.updateRoom);

@@ -38,6 +38,41 @@ function uploadBuffer(buffer, folder) {
   });
 }
 
+function uploadSecureBuffer(buffer, folder, resourceType = 'auto') {
+  assertCloudinaryConfig();
+
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: resourceType,
+        type: 'authenticated',
+        access_mode: 'authenticated',
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      },
+    );
+
+    stream.end(buffer);
+  });
+}
+
+function getSignedUrl(publicId, resourceType = 'auto') {
+  if (!publicId) return null;
+  // Generate a URL that is valid for 1 hour (3600 seconds)
+  return cloudinary.url(publicId, {
+    resource_type: resourceType,
+    type: 'authenticated',
+    sign_url: true,
+    expires_at: Math.floor(Date.now() / 1000) + 3600
+  });
+}
+
 module.exports = {
   uploadBuffer,
+  uploadSecureBuffer,
+  getSignedUrl,
+  cloudinary
 };

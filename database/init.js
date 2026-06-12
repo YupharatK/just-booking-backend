@@ -33,6 +33,12 @@ async function initDatabase() {
       rental_terms TEXT,
       rules TEXT,
       cover_image_url TEXT,
+      owner_id_card_url TEXT,
+      owner_id_card_public_id VARCHAR(255),
+      dorm_document_url TEXT,
+      dorm_document_public_id VARCHAR(255),
+      -- Note: payment columns (bank_name, account_name, account_number, promptpay_number, promptpay_qr_image) 
+      -- are deprecated and currently not used in the UI, but kept for legacy/future payout systems.
       status ENUM('pending','approved','rejected','inactive') NOT NULL DEFAULT 'pending',
       rejection_reason TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -148,6 +154,10 @@ async function initDatabase() {
   }
 
   await pool.query("ALTER TABLE dormitories ADD COLUMN cover_image_public_id VARCHAR(255) NULL").catch(ignoreDuplicateColumn);
+  await pool.query("ALTER TABLE dormitories ADD COLUMN owner_id_card_url TEXT NULL").catch(ignoreDuplicateColumn);
+  await pool.query("ALTER TABLE dormitories ADD COLUMN owner_id_card_public_id VARCHAR(255) NULL").catch(ignoreDuplicateColumn);
+  await pool.query("ALTER TABLE dormitories ADD COLUMN dorm_document_url TEXT NULL").catch(ignoreDuplicateColumn);
+  await pool.query("ALTER TABLE dormitories ADD COLUMN dorm_document_public_id VARCHAR(255) NULL").catch(ignoreDuplicateColumn);
   await pool.query("ALTER TABLE rooms ADD COLUMN image_public_id VARCHAR(255) NULL").catch(ignoreDuplicateColumn);
   await pool.query(
     `ALTER TABLE bookings

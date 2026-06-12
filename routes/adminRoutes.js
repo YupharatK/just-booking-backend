@@ -9,6 +9,7 @@ router.get("/users", adminController.listUsers);
 router.patch("/users/:id/status", adminController.updateUserStatus);
 router.get("/dormitories/count", adminController.countDormitories);
 router.get("/dormitories/pending", adminController.listPendingDormitories);
+router.get("/dormitories/:id/signed-documents", adminController.getSignedDocuments);
 router.patch("/dormitories/:id/approve", adminController.approveDormitory);
 router.patch("/dormitories/:id/reject", adminController.rejectDormitory);
 router.get("/bookings", adminController.listBookings);

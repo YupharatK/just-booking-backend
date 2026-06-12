@@ -87,6 +87,51 @@ async function uploadDormitoryCover(req, res, next) {
   }
 }
 
+async function uploadVerificationDocuments(req, res, next) {
+  try {
+    const { ownerIdCard, dormDocument } = req.files || {};
+
+    if (!ownerIdCard || !ownerIdCard[0]) {
+      return res.status(400).json({ message: "กรุณาอัปโหลดรูปภาพบัตรประชาชน" });
+    }
+    if (!dormDocument || !dormDocument[0]) {
+      return res.status(400).json({ message: "กรุณาอัปโหลดเอกสารประกอบการพิจารณาหอพัก (PDF)" });
+    }
+
+    const dormitories = await query("SELECT id FROM dormitories WHERE id = ? AND owner_id = ?", [
+      req.params.id,
+      req.user.id,
+    ]);
+
+    if (!dormitories[0]) {
+      return res.status(404).json({ message: "ไม่พบหอพักของคุณ" });
+    }
+
+    // Upload securely
+    const { uploadSecureBuffer } = require("../config/cloudinary");
+    const uploadedIdCard = await uploadSecureBuffer(ownerIdCard[0].buffer, "just-booking/verification-docs", "image");
+    const uploadedDormDoc = await uploadSecureBuffer(dormDocument[0].buffer, "just-booking/verification-docs", "auto");
+
+    await query(
+      `UPDATE dormitories
+       SET owner_id_card_url = ?, owner_id_card_public_id = ?,
+           dorm_document_url = ?, dorm_document_public_id = ?
+       WHERE id = ? AND owner_id = ?`,
+      [
+        uploadedIdCard.secure_url, uploadedIdCard.public_id,
+        uploadedDormDoc.secure_url, uploadedDormDoc.public_id,
+        req.params.id, req.user.id
+      ],
+    );
+
+    res.json({
+      message: "อัปโหลดเอกสารยืนยันตัวตนและหอพักสำเร็จ",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function listMyDormitories(req, res, next) {
   try {
     const rows = await query(
@@ -531,5 +576,6 @@ module.exports = {
   updateDormitory,
   updateRoom,
   uploadDormitoryCover,
+  uploadVerificationDocuments,
   uploadRoomImages,
 };
