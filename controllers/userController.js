@@ -244,11 +244,13 @@ async function createBooking(req, res, next) {
 async function listMyBookings(req, res, next) {
   try {
     const rows = await query(
-      `SELECT b.*, p.status AS payment_status, p.qr_code_url, r.room_number, r.room_type, d.name AS dormitory_name
+      `SELECT b.*, p.status AS payment_status, p.qr_code_url, r.room_number, r.room_type, d.name AS dormitory_name,
+              u.first_name AS user_first_name, u.last_name AS user_last_name, u.phone AS user_phone
        FROM bookings b
        JOIN rooms r ON r.id = b.room_id
        JOIN dormitories d ON d.id = r.dormitory_id
        LEFT JOIN payments p ON p.booking_id = b.id
+       JOIN users u ON u.id = b.user_id
        WHERE b.user_id = ?
        ORDER BY b.created_at DESC`,
       [req.user.id],
