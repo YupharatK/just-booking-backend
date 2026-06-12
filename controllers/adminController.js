@@ -53,7 +53,7 @@ async function getSignedDocuments(req, res, next) {
     
     res.json({
       ownerIdCardUrl: getSignedUrl(rows[0].owner_id_card_public_id, 'image'),
-      dormDocumentUrl: getSignedUrl(rows[0].dorm_document_public_id, 'auto'),
+      dormDocumentUrl: getSignedUrl(rows[0].dorm_document_public_id, 'raw'),
     });
   } catch (error) {
     next(error);

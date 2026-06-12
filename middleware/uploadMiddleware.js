@@ -25,7 +25,7 @@ const uploadDocs = multer({
         return cb(new Error("รูปบัตรประชาชนต้องเป็นไฟล์รูปภาพเท่านั้น"));
       }
     } else if (file.fieldname === 'dormDocument') {
-      if (file.mimetype !== "application/pdf") {
+      if (file.mimetype !== "application/pdf" && !file.originalname.toLowerCase().endsWith(".pdf")) {
         return cb(new Error("เอกสารหอพักต้องเป็นไฟล์ PDF เท่านั้น"));
       }
     } else {

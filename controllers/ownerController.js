@@ -110,7 +110,7 @@ async function uploadVerificationDocuments(req, res, next) {
     // Upload securely
     const { uploadSecureBuffer } = require("../config/cloudinary");
     const uploadedIdCard = await uploadSecureBuffer(ownerIdCard[0].buffer, "just-booking/verification-docs", "image");
-    const uploadedDormDoc = await uploadSecureBuffer(dormDocument[0].buffer, "just-booking/verification-docs", "auto");
+    const uploadedDormDoc = await uploadSecureBuffer(dormDocument[0].buffer, "just-booking/verification-docs", "raw");
 
     await query(
       `UPDATE dormitories
