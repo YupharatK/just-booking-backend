@@ -1,5 +1,6 @@
 const { query } = require("../config/db");
 const { hashPassword, signToken, verifyPassword } = require("../utils/auth");
+const { uploadBuffer } = require("../config/cloudinary");
 
 function publicUser(user) {
   const { password_hash, ...safeUser } = user;
@@ -19,6 +20,14 @@ async function register(req, res, next) {
       address,
       profileImageUrl,
     } = req.body;
+
+    let finalProfileImageUrl = null;
+    if (req.file) {
+      const uploaded = await uploadBuffer(req.file.buffer, "just-booking/profiles");
+      finalProfileImageUrl = uploaded.secure_url;
+    } else if (profileImageUrl) {
+      finalProfileImageUrl = profileImageUrl;
+    }
 
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "กรุณากรอกอีเมล รหัสผ่าน ชื่อ และนามสกุล" });
@@ -41,7 +50,7 @@ async function register(req, res, next) {
         nickname || null,
         phone || null,
         address || null,
-        profileImageUrl || null,
+        finalProfileImageUrl,
         role === "owner" ? "pending" : "active",
       ],
     );
